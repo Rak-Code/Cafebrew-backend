@@ -19,14 +19,17 @@ public class AdminOrderController {
     private final AdminOrderService adminOrderService;
 
     /**
-     * GET /api/admin/orders?status=NEW
+     * GET /api/admin/orders or /api/admin/orders?status=NEW
      * Used for kitchen screen / order queue
+     * If status is not provided, returns all orders
      */
     @GetMapping
     public ResponseEntity<List<AdminOrderResponse>> getOrdersByStatus(
-            @RequestParam OrderStatus status
+            @RequestParam(required = false) OrderStatus status
     ) {
-        List<Order> orders = adminOrderService.getOrdersByStatus(status);
+        List<Order> orders = (status != null) 
+                ? adminOrderService.getOrdersByStatus(status)
+                : adminOrderService.getAllOrders();
 
         List<AdminOrderResponse> response = orders.stream()
                 .map(order -> new AdminOrderResponse(

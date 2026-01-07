@@ -16,6 +16,15 @@ public class AdminOrderService {
     private final OrderRepository orderRepository;
     
     /**
+     * Get all orders for admin dashboard
+     * Returns orders sorted by creation time (newest first)
+     */
+    @Transactional(readOnly = true)
+    public List<Order> getAllOrders() {
+        return orderRepository.findAllByOrderByCreatedAtDesc();
+    }
+
+    /**
      * Get orders by status for admin queue management
      * Returns orders sorted by creation time (oldest first)
      */

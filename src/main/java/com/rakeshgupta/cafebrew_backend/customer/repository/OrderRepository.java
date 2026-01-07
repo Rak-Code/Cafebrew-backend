@@ -20,4 +20,9 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
      * Find orders by status ordered by creation time (oldest first) for admin queue
      */
     List<Order> findByStatusOrderByCreatedAtAsc(OrderStatus status);
+
+    /**
+     * Find all orders ordered by creation time (newest first) for admin dashboard
+     */
+    List<Order> findAllByOrderByCreatedAtDesc();
 }
