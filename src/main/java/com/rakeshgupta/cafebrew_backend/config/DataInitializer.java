@@ -11,7 +11,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 /**
- * Data Initializer to create default admin user on application startup
+ * Data Initializer to create default admin users on application startup.
+ * Creates an OWNER and STAFF user for admin panel access.
  */
 @Component
 @RequiredArgsConstructor
@@ -21,11 +22,17 @@ public class DataInitializer implements CommandLineRunner {
     private final AdminUserRepository adminUserRepository;
     private final PasswordEncoder passwordEncoder;
 
-    @Value("${app.admin.default.username:admin}")
-    private String defaultUsername;
+    @Value("${app.admin.owner.username:owner}")
+    private String ownerUsername;
 
-    @Value("${app.admin.default.password:admin123}")
-    private String defaultPassword;
+    @Value("${app.admin.owner.password:owner123}")
+    private String ownerPassword;
+
+    @Value("${app.admin.staff.username:staff}")
+    private String staffUsername;
+
+    @Value("${app.admin.staff.password:staff123}")
+    private String staffPassword;
 
     @Value("${app.admin.default.enabled:true}")
     private boolean defaultAdminEnabled;
@@ -33,28 +40,31 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         if (defaultAdminEnabled) {
-            createDefaultAdminUser();
+            createDefaultAdminUsers();
         } else {
             log.info("Default admin user creation is disabled.");
         }
     }
 
-    private void createDefaultAdminUser() {
-        // Check if admin user already exists
-        if (adminUserRepository.findByUsername(defaultUsername).isPresent()) {
-            log.info("Default admin user '{}' already exists. Skipping creation.", defaultUsername);
+    private void createDefaultAdminUsers() {
+        createUserIfNotExists(ownerUsername, ownerPassword, AdminRole.OWNER);
+        createUserIfNotExists(staffUsername, staffPassword, AdminRole.STAFF);
+    }
+
+    private void createUserIfNotExists(String username, String password, AdminRole role) {
+        if (adminUserRepository.findByUsername(username).isPresent()) {
+            log.info("Admin user '{}' already exists. Skipping creation.", username);
             return;
         }
 
-        // Create default admin user
         AdminUser adminUser = new AdminUser(
-                defaultUsername,
-                passwordEncoder.encode(defaultPassword),
-                AdminRole.ADMIN
+                username,
+                passwordEncoder.encode(password),
+                role
         );
 
         adminUserRepository.save(adminUser);
-        log.info("Default admin user created successfully with username: '{}'", defaultUsername);
-        log.warn("Please change the default password for security purposes!");
+        log.info("Admin user '{}' created with role: {}", username, role);
+        log.warn("Please change the default password for '{}' in production!", username);
     }
 }
