@@ -45,6 +45,7 @@ public class OrderService {
         Order order = new Order();
         order.setOrderCode(generateOrderCode());
         order.setCustomerName(request.getCustomerName());
+        order.setCustomerPhone(request.getCustomerPhone());
         order.setStatus(OrderStatus.NEW);
         order.setPaymentMode(request.getPaymentMode());
         order.setPaymentStatus(PaymentStatus.PENDING);

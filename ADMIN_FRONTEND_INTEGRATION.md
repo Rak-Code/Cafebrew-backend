@@ -7,7 +7,7 @@ This document covers all API endpoints needed for the **Admin Panel UI**. The la
 ## Base URL
 
 ```
-http://localhost:8080/api
+https://cafebrew-d6cp.onrender.com/api
 ```
 
 ---

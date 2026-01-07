@@ -24,7 +24,9 @@ public class CorsConfig {
         List<String> origins = Arrays.asList(
             "https://*.vercel.app",
             "http://localhost:3000",
-            "http://localhost:5173"
+            "http://localhost:5173",
+            "https://cafebrew.vercel.app",
+            "https://admincafebrew.vercel.app"
         );
         
         // Add custom origins from environment variable if provided

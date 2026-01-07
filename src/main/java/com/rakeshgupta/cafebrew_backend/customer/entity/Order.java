@@ -29,6 +29,9 @@ public class Order {
     @Column(name = "customer_name", nullable = false)
     private String customerName;
     
+    @Column(name = "customer_phone", nullable = false)
+    private String customerPhone;
+    
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private OrderStatus status = OrderStatus.NEW;
@@ -56,9 +59,10 @@ public class Order {
     @Version
     private Long version;
     
-    public Order(String orderCode, String customerName, PaymentMode paymentMode, BigDecimal totalAmount) {
+    public Order(String orderCode, String customerName, String customerPhone, PaymentMode paymentMode, BigDecimal totalAmount) {
         this.orderCode = orderCode;
         this.customerName = customerName;
+        this.customerPhone = customerPhone;
         this.paymentMode = paymentMode;
         this.totalAmount = totalAmount;
     }

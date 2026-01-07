@@ -21,6 +21,10 @@ public class PlaceOrderRequest {
     @Size(max = 50, message = "Customer name must not exceed 50 characters")
     private String customerName;
     
+    @NotBlank(message = "Phone number is required")
+    @Size(min = 10, max = 15, message = "Phone number must be between 10 and 15 characters")
+    private String customerPhone;
+    
     @NotNull(message = "Payment mode is required")
     private PaymentMode paymentMode;
     
