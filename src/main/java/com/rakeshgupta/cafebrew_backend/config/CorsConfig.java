@@ -7,6 +7,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -20,24 +21,23 @@ public class CorsConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         
-        // Allow Vercel domains and localhost for development
-        List<String> origins = Arrays.asList(
+        List<String> origins = new ArrayList<>(Arrays.asList(
             "https://*.vercel.app",
             "http://localhost:3000",
             "http://localhost:5173",
             "https://cafebrew.vercel.app",
             "https://admincafebrew.vercel.app"
-        );
+        ));
         
         // Add custom origins from environment variable if provided
         if (allowedOrigins != null && !allowedOrigins.isEmpty()) {
-            origins = new java.util.ArrayList<>(origins);
             origins.addAll(Arrays.asList(allowedOrigins.split(",")));
         }
         
         configuration.setAllowedOriginPatterns(origins);
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"));
+        configuration.setExposedHeaders(Arrays.asList("Authorization"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
         
