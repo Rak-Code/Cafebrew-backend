@@ -2,6 +2,8 @@ package com.rakeshgupta.cafebrew_backend.config;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -11,6 +13,7 @@ import java.util.Date;
 @Component
 public class JwtTokenProvider {
 
+    private static final Logger log = LoggerFactory.getLogger(JwtTokenProvider.class);
     private final Key secretKey;
     private final long validityInMillis;
 
@@ -19,6 +22,7 @@ public class JwtTokenProvider {
             @Value("${jwt.expiration}") long validityInMillis) {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes());
         this.validityInMillis = validityInMillis;
+        log.info("JwtTokenProvider initialized with expiration: {}ms", validityInMillis);
     }
 
     public String generateToken(String username, String role) {
@@ -43,7 +47,11 @@ public class JwtTokenProvider {
                     .build()
                     .parseClaimsJws(token);
             return true;
+        } catch (ExpiredJwtException ex) {
+            log.warn("JWT token expired: {}", ex.getMessage());
+            return false;
         } catch (JwtException | IllegalArgumentException ex) {
+            log.warn("JWT validation failed: {}", ex.getMessage());
             return false;
         }
     }

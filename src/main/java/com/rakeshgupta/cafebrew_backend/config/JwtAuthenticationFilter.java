@@ -32,15 +32,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String header = request.getHeader("Authorization");
         String requestUri = request.getRequestURI();
 
+        log.info("Processing request: {} | Auth header present: {}", requestUri, header != null);
+
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.substring(7);
+            log.info("Token found, validating...");
 
             if (jwtTokenProvider.validateToken(token)) {
                 String username = jwtTokenProvider.getUsername(token);
                 String role = jwtTokenProvider.getRole(token);
                 String authority = "ROLE_" + role;
 
-                log.debug("JWT Auth - URI: {}, User: {}, Role: {}", requestUri, username, authority);
+                log.info("JWT VALID - URI: {}, User: {}, Authority: {}", requestUri, username, authority);
 
                 UsernamePasswordAuthenticationToken auth =
                         new UsernamePasswordAuthenticationToken(
@@ -51,10 +54,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 SecurityContextHolder.getContext().setAuthentication(auth);
             } else {
-                log.warn("Invalid JWT token for request: {}", requestUri);
+                log.warn("JWT INVALID for request: {}", requestUri);
             }
+        } else if (header != null) {
+            log.warn("Auth header present but doesn't start with 'Bearer ': {}", header.substring(0, Math.min(20, header.length())));
         } else {
-            log.debug("No JWT token found for request: {}", requestUri);
+            log.info("No Authorization header for: {}", requestUri);
         }
 
         filterChain.doFilter(request, response);
