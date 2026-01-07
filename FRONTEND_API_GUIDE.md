@@ -93,6 +93,7 @@ GET /api/menu
     "category": "Coffee",
     "price": 150.00,
     "available": true,
+    "imageUrl": "https://example.com/images/cappuccino.jpg",
     "createdAt": "2025-01-07T10:00:00",
     "updatedAt": "2025-01-07T10:00:00"
   }
@@ -562,6 +563,7 @@ interface MenuItem {
   category: string;
   price: number;
   available: boolean;
+  imageUrl?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -652,6 +654,7 @@ interface ErrorResponse {
 | category | String | Category (Coffee, Food, etc.) |
 | price | BigDecimal | Price |
 | available | Boolean | Availability status |
+| imageUrl | String | URL to item image (optional) |
 | createdAt | DateTime | Creation timestamp |
 | updatedAt | DateTime | Last update timestamp |
 

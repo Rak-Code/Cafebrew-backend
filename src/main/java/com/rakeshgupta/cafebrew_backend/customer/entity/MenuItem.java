@@ -32,6 +32,9 @@ public class MenuItem {
     @Column(nullable = false)
     private Boolean available = true;
     
+    @Column(name = "image_url")
+    private String imageUrl;
+    
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
     
@@ -43,6 +46,14 @@ public class MenuItem {
         this.description = description;
         this.category = category;
         this.price = price;
+    }
+    
+    public MenuItem(String name, String description, String category, BigDecimal price, String imageUrl) {
+        this.name = name;
+        this.description = description;
+        this.category = category;
+        this.price = price;
+        this.imageUrl = imageUrl;
     }
     
     @PrePersist
