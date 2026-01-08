@@ -16,6 +16,11 @@ public interface MenuItemRepository extends JpaRepository<MenuItem, Long> {
     List<MenuItem> findByAvailableTrueOrderByCategoryAscNameAsc();
     
     /**
+     * Fetch ALL menu items sorted by category and name for admin management
+     */
+    List<MenuItem> findAllByOrderByCategoryAscNameAsc();
+    
+    /**
      * Find menu item by ID only if it's available (prevents ordering unavailable items)
      */
     Optional<MenuItem> findByIdAndAvailableTrue(Long id);

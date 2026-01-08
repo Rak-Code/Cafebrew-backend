@@ -24,6 +24,15 @@ public class MenuService {
     }
     
     /**
+     * Get ALL menu items for admin management
+     * Returns all items (including unavailable) sorted by category and name
+     */
+    @Transactional(readOnly = true)
+    public List<MenuItem> getAllMenuItems() {
+        return menuItemRepository.findAllByOrderByCategoryAscNameAsc();
+    }
+    
+    /**
      * Toggle menu item availability (Admin only)
      * Updates availability status for menu management
      */

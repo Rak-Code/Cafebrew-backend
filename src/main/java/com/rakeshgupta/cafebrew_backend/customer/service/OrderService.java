@@ -1,5 +1,8 @@
 package com.rakeshgupta.cafebrew_backend.customer.service;
 
+import com.rakeshgupta.cafebrew_backend.admin.dto.response.AdminOrderItemResponse;
+import com.rakeshgupta.cafebrew_backend.admin.dto.response.AdminOrderResponse;
+import com.rakeshgupta.cafebrew_backend.admin.service.OrderNotificationService;
 import com.rakeshgupta.cafebrew_backend.customer.dto.request.PlaceOrderRequest;
 import com.rakeshgupta.cafebrew_backend.customer.dto.response.PlaceOrderResponse;
 import com.rakeshgupta.cafebrew_backend.customer.dto.response.TrackOrderResponse;
@@ -30,6 +33,7 @@ public class OrderService {
     private final MenuItemRepository menuItemRepository;
     private final PaymentRepository paymentRepository;
     private final PaymentService paymentService;
+    private final OrderNotificationService orderNotificationService;
     
     /**
      * PLACE ORDER
@@ -80,6 +84,9 @@ public class OrderService {
         order.setTotalAmount(totalAmount);
         
         orderRepository.save(order);
+        
+        // Notify admin dashboard about new order via WebSocket
+        orderNotificationService.notifyNewOrder(toAdminOrderResponse(order));
         
         // Create Payment record
         Payment payment = new Payment();
@@ -164,5 +171,34 @@ public class OrderService {
     
     private String generateOrderCode() {
         return "ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    }
+    
+    /**
+     * Convert Order entity to AdminOrderResponse DTO for WebSocket notifications
+     */
+    private AdminOrderResponse toAdminOrderResponse(Order order) {
+        List<AdminOrderItemResponse> items = order.getItems().stream()
+                .map(item -> new AdminOrderItemResponse(
+                        item.getId(),
+                        item.getMenuItemName(),
+                        item.getPrice(),
+                        item.getQuantity(),
+                        item.getTotalPrice()
+                ))
+                .toList();
+        
+        return new AdminOrderResponse(
+                order.getId(),
+                order.getOrderCode(),
+                order.getCustomerName(),
+                order.getCustomerPhone(),
+                order.getStatus(),
+                order.getPaymentMode(),
+                order.getPaymentStatus(),
+                order.getTotalAmount(),
+                items,
+                order.getCreatedAt(),
+                order.getUpdatedAt()
+        );
     }
 }

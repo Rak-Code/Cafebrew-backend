@@ -97,6 +97,11 @@
 			<artifactId>razorpay-java</artifactId>
 			<version>1.4.6</version>
 		</dependency>
+		<!-- WebSocket for real-time updates -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-websocket</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>

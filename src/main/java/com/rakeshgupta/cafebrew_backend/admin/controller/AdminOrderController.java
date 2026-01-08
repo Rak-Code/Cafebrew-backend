@@ -6,6 +6,7 @@ import com.rakeshgupta.cafebrew_backend.admin.service.AdminOrderService;
 import com.rakeshgupta.cafebrew_backend.common.enums.OrderStatus;
 import com.rakeshgupta.cafebrew_backend.customer.entity.Order;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,26 +21,41 @@ public class AdminOrderController {
 
     /**
      * GET /api/admin/orders or /api/admin/orders?status=NEW
-     * Used for kitchen screen / order queue
-     * If status is not provided, returns all orders
+     * Supports pagination with page and size params
+     * Supports search with query param
      */
     @GetMapping
-    public ResponseEntity<List<AdminOrderResponse>> getOrdersByStatus(
-            @RequestParam(required = false) OrderStatus status
+    public ResponseEntity<?> getOrders(
+            @RequestParam(required = false) OrderStatus status,
+            @RequestParam(required = false) String query,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "false") boolean paginated
     ) {
+        // Search takes priority
+        if (query != null && !query.trim().isEmpty()) {
+            Page<Order> ordersPage = adminOrderService.searchOrders(query.trim(), page, size);
+            Page<AdminOrderResponse> response = ordersPage.map(adminOrderService::toAdminOrderResponse);
+            return ResponseEntity.ok(response);
+        }
+        
+        // Paginated response
+        if (paginated) {
+            Page<Order> ordersPage = (status != null)
+                    ? adminOrderService.getOrdersByStatusPaginated(status, page, size)
+                    : adminOrderService.getAllOrdersPaginated(page, size);
+            
+            Page<AdminOrderResponse> response = ordersPage.map(adminOrderService::toAdminOrderResponse);
+            return ResponseEntity.ok(response);
+        }
+        
+        // Non-paginated response (backward compatibility)
         List<Order> orders = (status != null) 
                 ? adminOrderService.getOrdersByStatus(status)
                 : adminOrderService.getAllOrders();
 
         List<AdminOrderResponse> response = orders.stream()
-                .map(order -> new AdminOrderResponse(
-                        order.getId(),
-                        order.getOrderCode(),
-                        order.getCustomerName(),
-                        order.getStatus(),
-                        order.getTotalAmount(),
-                        order.getCreatedAt()
-                ))
+                .map(adminOrderService::toAdminOrderResponse)
                 .toList();
 
         return ResponseEntity.ok(response);
