@@ -6,34 +6,92 @@ import com.rakeshgupta.cafebrew_backend.customer.repository.PaymentRepository;
 import com.rakeshgupta.cafebrew_backend.customer.repository.OrderRepository;
 import com.rakeshgupta.cafebrew_backend.common.dto.PaymentWebhookRequest;
 import com.rakeshgupta.cafebrew_backend.common.enums.PaymentStatus;
-import lombok.RequiredArgsConstructor;
+import com.razorpay.RazorpayClient;
+import com.razorpay.RazorpayException;
+import lombok.extern.slf4j.Slf4j;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
+
 @Service
-@RequiredArgsConstructor
+@Slf4j
 public class PaymentService {
     
     private final PaymentRepository paymentRepository;
     private final OrderRepository orderRepository;
+    private final RazorpayClient razorpayClient;
+    private final String razorpayKeySecret;
+    
+    public PaymentService(
+            PaymentRepository paymentRepository,
+            OrderRepository orderRepository,
+            @Value("${razorpay.key.id}") String razorpayKeyId,
+            @Value("${razorpay.key.secret}") String razorpayKeySecret
+    ) throws RazorpayException {
+        this.paymentRepository = paymentRepository;
+        this.orderRepository = orderRepository;
+        this.razorpayKeySecret = razorpayKeySecret;
+        this.razorpayClient = new RazorpayClient(razorpayKeyId, razorpayKeySecret);
+    }
     
     /**
-     * Creates Razorpay order.
+     * Creates Razorpay order using actual Razorpay API.
      * Returns razorpay_order_id.
      */
     @Transactional
     public String createOnlinePayment(Order order) {
-        // TODO: Integrate with actual Razorpay API
-        // RazorpayOrder rpOrder = razorpayClient.createOrder(order.getTotalAmount(), order.getOrderCode());
-        String razorpayOrderId = "rzp_order_" + System.currentTimeMillis();
-        
-        Payment payment = paymentRepository.findByOrder(order)
-                .orElseThrow(() -> new IllegalStateException("Payment not found"));
-        
-        payment.setRazorpayOrderId(razorpayOrderId);
-        paymentRepository.save(payment);
-        
-        return razorpayOrderId;
+        try {
+            JSONObject orderRequest = new JSONObject();
+            orderRequest.put("amount", order.getTotalAmount().multiply(new java.math.BigDecimal(100)).intValue()); // Convert to paise
+            orderRequest.put("currency", "INR");
+            orderRequest.put("receipt", order.getOrderCode());
+            
+            com.razorpay.Order razorpayOrder = razorpayClient.orders.create(orderRequest);
+            String razorpayOrderId = razorpayOrder.get("id");
+            
+            log.info("Created Razorpay order: {} for order: {}", razorpayOrderId, order.getOrderCode());
+            
+            Payment payment = paymentRepository.findByOrder(order)
+                    .orElseThrow(() -> new IllegalStateException("Payment not found"));
+            
+            payment.setRazorpayOrderId(razorpayOrderId);
+            paymentRepository.save(payment);
+            
+            return razorpayOrderId;
+        } catch (RazorpayException e) {
+            log.error("Failed to create Razorpay order for order: {}", order.getOrderCode(), e);
+            throw new RuntimeException("Failed to create payment order: " + e.getMessage(), e);
+        }
+    }
+    
+    /**
+     * Verifies Razorpay webhook signature.
+     */
+    public boolean verifyWebhookSignature(String payload, String signature) {
+        try {
+            Mac sha256Hmac = Mac.getInstance("HmacSHA256");
+            SecretKeySpec secretKey = new SecretKeySpec(razorpayKeySecret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+            sha256Hmac.init(secretKey);
+            byte[] hash = sha256Hmac.doFinal(payload.getBytes(StandardCharsets.UTF_8));
+            String generatedSignature = bytesToHex(hash);
+            return generatedSignature.equals(signature);
+        } catch (Exception e) {
+            log.error("Failed to verify webhook signature", e);
+            return false;
+        }
+    }
+    
+    private String bytesToHex(byte[] bytes) {
+        StringBuilder sb = new StringBuilder();
+        for (byte b : bytes) {
+            sb.append(String.format("%02x", b));
+        }
+        return sb.toString();
     }
     
     /**
@@ -47,8 +105,10 @@ public class PaymentService {
         String razorpayPaymentId = entity.getId();
         String status = entity.getStatus();
         
+        log.info("Processing webhook for Razorpay order: {}, status: {}", razorpayOrderId, status);
+        
         Payment payment = paymentRepository.findByRazorpayOrderId(razorpayOrderId)
-                .orElseThrow(() -> new IllegalStateException("Payment not found"));
+                .orElseThrow(() -> new IllegalStateException("Payment not found for Razorpay order: " + razorpayOrderId));
         
         Order order = payment.getOrder();
         
@@ -56,9 +116,11 @@ public class PaymentService {
             payment.setPaymentStatus(PaymentStatus.PAID);
             payment.setRazorpayPaymentId(razorpayPaymentId);
             order.setPaymentStatus(PaymentStatus.PAID);
+            log.info("Payment successful for order: {}", order.getOrderCode());
         } else {
             payment.setPaymentStatus(PaymentStatus.FAILED);
             order.setPaymentStatus(PaymentStatus.FAILED);
+            log.warn("Payment failed for order: {}, status: {}", order.getOrderCode(), status);
         }
         
         paymentRepository.save(payment);
