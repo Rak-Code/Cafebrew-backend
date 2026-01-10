@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+
+    <Properties>
+        <Property name="LOG_PATTERN">
+            %d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %logger{36} - %msg%n
+        </Property>
+    </Properties>
+
+    <Appenders>
+
+        <!-- Console appender (best for Render - captures stdout automatically) -->
+        <Console name="ConsoleAppender" target="SYSTEM_OUT">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+        </Console>
+
+        <!-- Lightweight async wrapper - Render Free Tier optimized -->
+        <Async name="AsyncAppender"
+               bufferSize="1024"
+               blocking="false">
+            <AppenderRef ref="ConsoleAppender"/>
+        </Async>
+
+    </Appenders>
+
+    <Loggers>
+
+        <!-- Reduce noise from frameworks -->
+        <Logger name="org.springframework" level="INFO"/>
+        <Logger name="org.hibernate" level="WARN"/>
+        <Logger name="org.hibernate.SQL" level="WARN"/>
+        <Logger name="org.hibernate.type.descriptor.sql" level="WARN"/>
+        
+        <!-- App-specific logging -->
+        <Logger name="com.rakeshgupta.cafebrew_backend" level="INFO"/>
+
+        <Root level="INFO">
+            <AppenderRef ref="AsyncAppender"/>
+        </Root>
+
+    </Loggers>
+
+</Configuration>
