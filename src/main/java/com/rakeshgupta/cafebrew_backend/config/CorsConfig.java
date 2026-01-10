@@ -26,7 +26,8 @@ public class CorsConfig {
             "http://localhost:3000",
             "http://localhost:5173",
             "https://cafebrew.vercel.app",
-            "https://admincafebrew.vercel.app"
+            "https://admincafebrew.vercel.app",
+            "http://localhost:8081"
         ));
         
         // Add custom origins from environment variable if provided
