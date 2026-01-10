@@ -1,5 +1,6 @@
 package com.rakeshgupta.cafebrew_backend.customer.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -40,6 +41,7 @@ public class Category {
     
     @OneToMany(mappedBy = "categoryEntity", fetch = FetchType.LAZY)
     @ToString.Exclude
+    @JsonIgnore
     private List<MenuItem> menuItems = new ArrayList<>();
     
     public Category(String name, String description, Integer displayOrder) {
