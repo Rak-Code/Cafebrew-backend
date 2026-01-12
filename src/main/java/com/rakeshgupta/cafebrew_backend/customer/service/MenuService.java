@@ -9,8 +9,8 @@ import com.rakeshgupta.cafebrew_backend.customer.entity.MenuItem;
 import com.rakeshgupta.cafebrew_backend.customer.repository.CategoryRepository;
 import com.rakeshgupta.cafebrew_backend.customer.repository.MenuItemRepository;
 import com.rakeshgupta.cafebrew_backend.service.ImageStorageService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,15 +18,23 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class MenuService {
     
     private final MenuItemRepository menuItemRepository;
     private final CategoryRepository categoryRepository;
+    private ImageStorageService imageStorageService;
     
+    public MenuService(MenuItemRepository menuItemRepository, CategoryRepository categoryRepository) {
+        this.menuItemRepository = menuItemRepository;
+        this.categoryRepository = categoryRepository;
+    }
+    
+    @Autowired(required = false)
     @Lazy
-    private final ImageStorageService imageStorageService;
+    public void setImageStorageService(ImageStorageService imageStorageService) {
+        this.imageStorageService = imageStorageService;
+    }
     
     /**
      * Get available menu items for customers.
@@ -128,7 +136,7 @@ public class MenuService {
         // Delete old image from R2 if a new image URL is provided and it's different
         String oldImageUrl = menuItem.getImageUrl();
         String newImageUrl = request.getImageUrl();
-        if (oldImageUrl != null && !oldImageUrl.isEmpty() 
+        if (imageStorageService != null && oldImageUrl != null && !oldImageUrl.isEmpty() 
                 && newImageUrl != null && !newImageUrl.equals(oldImageUrl)) {
             try {
                 imageStorageService.deleteImage(oldImageUrl);
@@ -164,7 +172,7 @@ public class MenuService {
         
         // Delete image from R2 if present
         String imageUrl = menuItem.getImageUrl();
-        if (imageUrl != null && !imageUrl.isEmpty()) {
+        if (imageStorageService != null && imageUrl != null && !imageUrl.isEmpty()) {
             try {
                 imageStorageService.deleteImage(imageUrl);
                 log.info("Deleted image for menu item {}: {}", id, imageUrl);

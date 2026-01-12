@@ -1,7 +1,8 @@
 package com.rakeshgupta.cafebrew_backend.admin.controller;
 
 import com.rakeshgupta.cafebrew_backend.service.ImageStorageService;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -11,10 +12,14 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin/images")
-@RequiredArgsConstructor
 public class AdminImageController {
 
     private final ImageStorageService imageStorageService;
+
+    @Autowired
+    public AdminImageController(@Lazy ImageStorageService imageStorageService) {
+        this.imageStorageService = imageStorageService;
+    }
 
     /**
      * POST /api/admin/images/upload
