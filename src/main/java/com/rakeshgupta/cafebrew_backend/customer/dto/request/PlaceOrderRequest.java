@@ -43,5 +43,10 @@ public class PlaceOrderRequest {
         @NotNull(message = "Quantity is required")
         @Min(value = 1, message = "Quantity must be at least 1")
         private Integer quantity;
+
+        /**
+         * Optional list of extra ingredient IDs to add to this order item.
+         */
+        private List<Long> extraIngredientIds;
     }
 }

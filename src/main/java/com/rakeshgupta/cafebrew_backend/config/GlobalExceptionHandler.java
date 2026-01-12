@@ -1,9 +1,6 @@
 package com.rakeshgupta.cafebrew_backend.config;
 
-import com.rakeshgupta.cafebrew_backend.common.exception.CategoryHasItemsException;
-import com.rakeshgupta.cafebrew_backend.common.exception.CategoryNotFoundException;
-import com.rakeshgupta.cafebrew_backend.common.exception.DuplicateCategoryNameException;
-import com.rakeshgupta.cafebrew_backend.common.exception.MenuItemNotFoundException;
+import com.rakeshgupta.cafebrew_backend.common.exception.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -58,6 +55,56 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleMenuItemNotFound(MenuItemNotFoundException ex) {
         log.warn("Menu item not found: {}", ex.getMessage());
         return buildErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    /**
+     * Handle ExtraIngredientNotFoundException - thrown when an extra ingredient is not found.
+     * Returns 404 Not Found.
+     */
+    @ExceptionHandler(ExtraIngredientNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleExtraIngredientNotFound(ExtraIngredientNotFoundException ex) {
+        log.warn("Extra ingredient not found: {}", ex.getMessage());
+        return buildErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    /**
+     * Handle DuplicateExtraIngredientNameException - thrown when creating/updating an extra ingredient with duplicate name.
+     * Returns 409 Conflict.
+     */
+    @ExceptionHandler(DuplicateExtraIngredientNameException.class)
+    public ResponseEntity<Map<String, Object>> handleDuplicateExtraIngredientName(DuplicateExtraIngredientNameException ex) {
+        log.warn("Duplicate extra ingredient name: {}", ex.getMessage());
+        return buildErrorResponse(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    /**
+     * Handle ExtraIngredientHasOrdersException - thrown when trying to delete an extra ingredient with order history.
+     * Returns 409 Conflict.
+     */
+    @ExceptionHandler(ExtraIngredientHasOrdersException.class)
+    public ResponseEntity<Map<String, Object>> handleExtraIngredientHasOrders(ExtraIngredientHasOrdersException ex) {
+        log.warn("Extra ingredient has orders: {}", ex.getMessage());
+        return buildErrorResponse(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    /**
+     * Handle InvalidCategoryException - thrown when one or more category IDs are invalid.
+     * Returns 400 Bad Request.
+     */
+    @ExceptionHandler(InvalidCategoryException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidCategory(InvalidCategoryException ex) {
+        log.warn("Invalid category: {}", ex.getMessage());
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    /**
+     * Handle InactiveExtraIngredientException - thrown when trying to use an inactive extra ingredient.
+     * Returns 400 Bad Request.
+     */
+    @ExceptionHandler(InactiveExtraIngredientException.class)
+    public ResponseEntity<Map<String, Object>> handleInactiveExtraIngredient(InactiveExtraIngredientException ex) {
+        log.warn("Inactive extra ingredient: {}", ex.getMessage());
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
     /**

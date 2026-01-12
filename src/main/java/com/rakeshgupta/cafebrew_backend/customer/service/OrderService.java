@@ -2,13 +2,16 @@ package com.rakeshgupta.cafebrew_backend.customer.service;
 
 import com.rakeshgupta.cafebrew_backend.admin.dto.response.AdminOrderItemResponse;
 import com.rakeshgupta.cafebrew_backend.admin.dto.response.AdminOrderResponse;
+import com.rakeshgupta.cafebrew_backend.admin.dto.response.OrderItemExtraResponse;
 import com.rakeshgupta.cafebrew_backend.admin.service.OrderNotificationService;
 import com.rakeshgupta.cafebrew_backend.customer.dto.request.PlaceOrderRequest;
 import com.rakeshgupta.cafebrew_backend.customer.dto.response.PlaceOrderResponse;
 import com.rakeshgupta.cafebrew_backend.customer.dto.response.TrackOrderResponse;
+import com.rakeshgupta.cafebrew_backend.customer.entity.ExtraIngredient;
 import com.rakeshgupta.cafebrew_backend.customer.entity.MenuItem;
 import com.rakeshgupta.cafebrew_backend.customer.entity.Order;
 import com.rakeshgupta.cafebrew_backend.customer.entity.OrderItem;
+import com.rakeshgupta.cafebrew_backend.customer.entity.OrderItemExtra;
 import com.rakeshgupta.cafebrew_backend.customer.entity.Payment;
 import com.rakeshgupta.cafebrew_backend.customer.repository.MenuItemRepository;
 import com.rakeshgupta.cafebrew_backend.customer.repository.OrderRepository;
@@ -24,6 +27,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor

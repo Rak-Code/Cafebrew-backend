@@ -6,15 +6,19 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import lombok.EqualsAndHashCode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "categories")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(exclude = {"menuItems", "extraIngredients"})
 public class Category {
     
     @Id
@@ -43,6 +47,11 @@ public class Category {
     @ToString.Exclude
     @JsonIgnore
     private List<MenuItem> menuItems = new ArrayList<>();
+
+    @ManyToMany(mappedBy = "categories", fetch = FetchType.LAZY)
+    @ToString.Exclude
+    @JsonIgnore
+    private Set<ExtraIngredient> extraIngredients = new HashSet<>();
     
     public Category(String name, String description, Integer displayOrder) {
         this.name = name;
