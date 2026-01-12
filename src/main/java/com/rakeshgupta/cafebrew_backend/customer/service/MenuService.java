@@ -8,7 +8,10 @@ import com.rakeshgupta.cafebrew_backend.customer.entity.Category;
 import com.rakeshgupta.cafebrew_backend.customer.entity.MenuItem;
 import com.rakeshgupta.cafebrew_backend.customer.repository.CategoryRepository;
 import com.rakeshgupta.cafebrew_backend.customer.repository.MenuItemRepository;
+import com.rakeshgupta.cafebrew_backend.service.ImageStorageService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,10 +19,14 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MenuService {
     
     private final MenuItemRepository menuItemRepository;
     private final CategoryRepository categoryRepository;
+    
+    @Lazy
+    private final ImageStorageService imageStorageService;
     
     /**
      * Get available menu items for customers.
@@ -98,6 +105,7 @@ public class MenuService {
     /**
      * Update an existing menu item.
      * Validates that the category exists and is active.
+     * Deletes old image from R2 if a new image URL is provided.
      * @param id the menu item ID to update
      * @param request the update request with new data
      * @return the updated menu item
@@ -117,6 +125,19 @@ public class MenuService {
             throw new IllegalArgumentException("Cannot assign menu item to inactive category");
         }
         
+        // Delete old image from R2 if a new image URL is provided and it's different
+        String oldImageUrl = menuItem.getImageUrl();
+        String newImageUrl = request.getImageUrl();
+        if (oldImageUrl != null && !oldImageUrl.isEmpty() 
+                && newImageUrl != null && !newImageUrl.equals(oldImageUrl)) {
+            try {
+                imageStorageService.deleteImage(oldImageUrl);
+                log.info("Deleted old image for menu item {}: {}", id, oldImageUrl);
+            } catch (Exception e) {
+                log.warn("Failed to delete old image for menu item {}: {}", id, e.getMessage());
+            }
+        }
+        
         menuItem.setName(request.getName());
         menuItem.setDescription(request.getDescription());
         menuItem.setCategoryEntity(category);
@@ -132,14 +153,26 @@ public class MenuService {
     
     /**
      * Delete a menu item by ID.
+     * Also deletes the associated image from R2 storage if present.
      * @param id the menu item ID to delete
      * @throws MenuItemNotFoundException if menu item not found
      */
     @Transactional
     public void deleteMenuItem(Long id) {
-        if (!menuItemRepository.existsById(id)) {
-            throw new MenuItemNotFoundException(id);
+        MenuItem menuItem = menuItemRepository.findById(id)
+                .orElseThrow(() -> new MenuItemNotFoundException(id));
+        
+        // Delete image from R2 if present
+        String imageUrl = menuItem.getImageUrl();
+        if (imageUrl != null && !imageUrl.isEmpty()) {
+            try {
+                imageStorageService.deleteImage(imageUrl);
+                log.info("Deleted image for menu item {}: {}", id, imageUrl);
+            } catch (Exception e) {
+                log.warn("Failed to delete image for menu item {}: {}", id, e.getMessage());
+            }
         }
+        
         menuItemRepository.deleteById(id);
     }
 }

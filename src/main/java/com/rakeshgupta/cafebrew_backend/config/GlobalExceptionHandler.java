@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -16,6 +17,16 @@ import java.util.Map;
 @ControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
+
+    /**
+     * Handle MaxUploadSizeExceededException - thrown when file upload exceeds max size.
+     * Returns 413 Payload Too Large.
+     */
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<Map<String, Object>> handleMaxUploadSizeExceeded(MaxUploadSizeExceededException ex) {
+        log.warn("File upload size exceeded: {}", ex.getMessage());
+        return buildErrorResponse(HttpStatus.PAYLOAD_TOO_LARGE, "File size exceeds maximum limit of 10MB");
+    }
 
     /**
      * Handle CategoryHasItemsException - thrown when trying to delete a category with menu items.
