@@ -114,6 +114,7 @@ public class AdminOrderService {
                 order.getOrderCode(),
                 order.getCustomerName(),
                 order.getCustomerPhone(),
+                order.getTableNo(),
                 order.getStatus(),
                 order.getPaymentMode(),
                 order.getPaymentStatus(),

@@ -28,6 +28,9 @@ public class PlaceOrderRequest {
     @NotNull(message = "Payment mode is required")
     private PaymentMode paymentMode;
     
+    @Size(max = 20, message = "Table number must not exceed 20 characters")
+    private String tableNo;
+    
     @NotEmpty(message = "Order must contain at least one item")
     @Valid
     private List<OrderItemRequest> items;

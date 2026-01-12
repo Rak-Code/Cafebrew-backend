@@ -54,6 +54,7 @@ public class OrderService {
         order.setOrderCode(generateOrderCode());
         order.setCustomerName(request.getCustomerName());
         order.setCustomerPhone(request.getCustomerPhone());
+        order.setTableNo(request.getTableNo());
         order.setStatus(OrderStatus.NEW);
         order.setPaymentMode(request.getPaymentMode());
         order.setPaymentStatus(PaymentStatus.PENDING);
@@ -196,6 +197,7 @@ public class OrderService {
                 order.getOrderCode(),
                 order.getCustomerName(),
                 order.getCustomerPhone(),
+                order.getTableNo(),
                 order.getStatus(),
                 order.getPaymentMode(),
                 order.getPaymentStatus(),

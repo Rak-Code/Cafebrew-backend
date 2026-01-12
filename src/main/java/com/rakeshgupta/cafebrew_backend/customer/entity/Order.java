@@ -32,6 +32,9 @@ public class Order {
     @Column(name = "customer_phone", nullable = false)
     private String customerPhone;
     
+    @Column(name = "table_no")
+    private String tableNo;
+    
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private OrderStatus status = OrderStatus.NEW;

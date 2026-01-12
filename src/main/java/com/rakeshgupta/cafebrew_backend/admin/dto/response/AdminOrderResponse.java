@@ -19,6 +19,7 @@ public class AdminOrderResponse {
     private String orderCode;
     private String customerName;
     private String customerPhone;
+    private String tableNo;
     private OrderStatus status;
     private PaymentMode paymentMode;
     private PaymentStatus paymentStatus;

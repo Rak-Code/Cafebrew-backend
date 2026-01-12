@@ -188,7 +188,7 @@ This implementation plan covers the Extra Ingredients feature across three codeb
   - Display selected extras and updated total
   - _Requirements: 3.2, 3.5, 3.6_
 
-- [-] 21. Update Order Placement
+- [x] 21. Update Order Placement
   - Update cafebrew-orderhub/src/pages/CheckoutPage.tsx to include extras in order request
   - Map cart item extras to extraIngredientIds in order items
   - Handle validation errors for inactive extras
